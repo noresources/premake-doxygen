@@ -10,6 +10,11 @@ m._VERSION = p._VERSION
 
 -----------------------------------
 
+local DOXYFILE_FIELD_TEXT_VALUE = {
+	"PROJECT_BRIEF",
+	"PROJECT_NAME"
+}
+
 local DOXYFILE_FIELD_TABLE_VALUE = {
 	"ABBREVIATE_BRIEF",
 	"STRIP_FROM_PATH",
@@ -52,7 +57,7 @@ local DOXYFILE_FIELD_TABLE_VALUE = {
 
 local this = {}
 
-this.getcommonpath = function(paths)
+function this.getcommonpath (paths)
 	if #paths == 1 then return paths[1] end
 	local match = false
 	local parts = {}
@@ -83,7 +88,7 @@ this.getcommonpath = function(paths)
 	return nil
 end
 
-this.append = function (ctx, key, value)
+function this.append (ctx, key, value)
 	if type(ctx.settings[key]) ~= "table" then
 		if type(ctx.settings[key]) == nil then
 			ctx.settings[key] = {}
@@ -103,20 +108,24 @@ this.append = function (ctx, key, value)
 	end
 end
 
-this.set = function (ctx, key, value)
+function this.set (ctx, key, value)
 	ctx.settings[key] = value
 end
 
-this.assign  = function (ctx, key, value)
+function this.assign  (ctx, key, value)
 	key = string.upper(string.gsub(key, "%s+", "_"))
 	if table.contains (DOXYFILE_FIELD_TABLE_VALUE, key) then
 		this.append (ctx, key, value)
 	else
-		this.set (ctx, key, value)
+		this.set (ctx, key, iif(
+			table.contains (DOXYFILE_FIELD_TEXT_VALUE, key),
+			premake.quoted(tostring(value)),
+			value
+		))
 	end
 end
 
-this.generate = function (ctx)
+function this.generate (ctx)
 	for k, v in pairs (ctx.settings)
 	do
 		if type (v) == "boolean"
@@ -134,7 +143,7 @@ this.generate = function (ctx)
 	end
 end
 
-this.onWorkspace = function (wks)
+function this.onWorkspace (wks)
 	if type(wks.doxygen) == "boolean"
 		and wks.doxygen == false
 	then
@@ -175,7 +184,7 @@ this.onWorkspace = function (wks)
 	p.generate(ctx, ".doxyfile", this.generate)
 end
 
-this.onProject = function (prj, ctx)
+function this.onProject (prj, ctx)
 	if type(prj.doxygen) == "boolean"
 		and prj.doxygen == false
 	then
