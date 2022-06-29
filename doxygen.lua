@@ -99,7 +99,7 @@ function this.append (ctx, key, value)
 	
 	if type(value) == "table" then
 		for _, v in ipairs(value) do
-			if (not table.contains(ctx.settings[key])) then
+			if (not table.contains(ctx.settings[key], v)) then
 				table.insert (ctx.settings[key], v)
 			end
 		end
